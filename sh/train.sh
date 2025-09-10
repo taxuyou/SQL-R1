@@ -3,13 +3,14 @@ export VLLM_ATTENTION_BACKEND=XFORMERS
 
 DATA_DIR_PATH=data
 
-RUN_ID=7B
-GPU_ENV=8GPU
-MODEL_ENV=Qwen2.5-Coder-7B-Instruct
+RUN_ID=27B
+GPU_ENV=2GPU
+HF_MODEL_ID=OpenPipe/gemma-3-27b-it-text-only
+MODEL_ENV=gemma-3-27b-it-text-only
 PROJECT_NAME=SQL-R1
-        
+
 LOG_PATH=logs/$PROJECT_NAME
-MODEL_PATH=models/$MODEL_ENV
+MODEL_PATH=$HF_MODEL_ID
 EXPERIMENT_NAME=$GPU_ENV-$MODEL_ENV-$RUN_ID
 
 mkdir -p $LOG_PATH
@@ -39,7 +40,7 @@ python -m verl.trainer.main_ppo \
     actor_rollout_ref.actor.fsdp_config.grad_offload=True \
     actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
     actor_rollout_ref.rollout.log_prob_micro_batch_size=80 \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=4 \
+    actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
     actor_rollout_ref.rollout.name=vllm \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.2 \
     actor_rollout_ref.rollout.n=8 \
@@ -51,7 +52,7 @@ python -m verl.trainer.main_ppo \
     trainer.logger=['wandb'] \
     trainer.project_name=$PROJECT_NAME \
     trainer.experiment_name=$EXPERIMENT_NAME \
-    trainer.n_gpus_per_node=8 \
+    trainer.n_gpus_per_node=2 \
     trainer.nnodes=1 \
     trainer.default_local_dir=$LOG_PATH/$EXPERIMENT_NAME \
     trainer.default_hdfs_dir=null \

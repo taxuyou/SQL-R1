@@ -19,17 +19,45 @@ import torch.nn as nn
 
 # Supported models using HF Rmpad
 # TODO(sgm): HF may supported more than listed here, we should add more after testing
-from transformers import LlamaConfig, MistralConfig, GemmaConfig, Qwen2Config
+from transformers import LlamaConfig, MistralConfig, Qwen2Config
 
-_REOVEPAD_MODELS = {'llama': LlamaConfig, 'mistral': MistralConfig, 'gemma': GemmaConfig, 'qwen2': Qwen2Config}
+try:  # Gemma family configs are optional depending on transformers version
+    from transformers import GemmaConfig  # type: ignore
+except ImportError:  # pragma: no cover - handled gracefully
+    GemmaConfig = None  # type: ignore
+
+try:  # pragma: no cover - optional import
+    from transformers import Gemma2Config  # type: ignore
+except ImportError:  # pragma: no cover
+    Gemma2Config = None  # type: ignore
+
+try:  # pragma: no cover - optional import
+    from transformers import Gemma3Config  # type: ignore
+except ImportError:  # pragma: no cover
+    Gemma3Config = None  # type: ignore
+
+_REMOVEPAD_MODELS = {
+    'llama': LlamaConfig,
+    'mistral': MistralConfig,
+    'qwen2': Qwen2Config,
+}
+
+if GemmaConfig is not None:
+    _REMOVEPAD_MODELS['gemma'] = GemmaConfig
+if Gemma2Config is not None:
+    _REMOVEPAD_MODELS['gemma2'] = Gemma2Config
+if Gemma3Config is not None:
+    _REMOVEPAD_MODELS['gemma3'] = Gemma3Config
 
 
 def check_model_support_rmpad(model_type: str):
     assert isinstance(model_type, str)
-    if not model_type in _REOVEPAD_MODELS.keys():
-        raise ValueError(f"Model architecture {model_type} is not supported for now. "
-                         f"RMPad supported architectures: {_REOVEPAD_MODELS.keys()}."
-                         f"Please set `use_remove_padding=False` in the model config.")
+    if model_type not in _REMOVEPAD_MODELS:
+        raise ValueError(
+            f"Model architecture {model_type} is not supported for now. "
+            f"RMPad supported architectures: {_REMOVEPAD_MODELS.keys()}."
+            "Please set `use_remove_padding=False` in the model config."
+        )
 
 
 # Supported models in Megatron-LM
