@@ -52,7 +52,7 @@ if Gemma3Config is not None:
 
 def check_model_support_rmpad(model_type: str):
     assert isinstance(model_type, str)
-    if model_type not in _REMOVEPAD_MODELS:
+    if not any(model_type == k or model_type.startswith(f"{k}_") for k in _REMOVEPAD_MODELS):
         raise ValueError(
             f"Model architecture {model_type} is not supported for now. "
             f"RMPad supported architectures: {_REMOVEPAD_MODELS.keys()}."
