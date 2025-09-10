@@ -13,7 +13,7 @@ LOG_PATH=logs/$PROJECT_NAME
 MODEL_PATH=$HF_MODEL_ID
 EXPERIMENT_NAME=$GPU_ENV-$MODEL_ENV-$RUN_ID
 
-mkdir -p $LOG_PATH
+mkdir -p "$LOG_PATH/$MODEL_ENV"
 
 set -x
 
@@ -49,7 +49,7 @@ python -m verl.trainer.main_ppo \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
     algorithm.kl_ctrl.kl_coef=0.001 \
     trainer.critic_warmup=0 \
-    trainer.logger=['wandb'] \
+    trainer.logger=[wandb] \
     trainer.project_name=$PROJECT_NAME \
     trainer.experiment_name=$EXPERIMENT_NAME \
     trainer.n_gpus_per_node=2 \
