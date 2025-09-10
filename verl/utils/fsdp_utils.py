@@ -14,6 +14,7 @@
 
 from typing import Dict
 import functools
+import importlib
 import json
 import math
 import itertools
@@ -64,9 +65,14 @@ def get_fsdp_wrap_policy(module, config=None):
         for layer_class in fsdp_transformer_layer_cls_to_wrap:
             transformer_cls = get_module_class_from_name(module, layer_class)
             if transformer_cls is None:
+                try:  # fall back to the model's defining module (e.g. Gemma3)
+                    modeling_module = importlib.import_module(module.__class__.__module__)
+                    transformer_cls = getattr(modeling_module, layer_class, None)
+                except Exception:  # pragma: no cover - best effort fallback
+                    transformer_cls = None
+            if transformer_cls is None:
                 raise Exception("Could not find the transformer layer class to wrap in the model.")
-            else:
-                transformer_cls_to_wrap.add(transformer_cls)
+            transformer_cls_to_wrap.add(transformer_cls)
 
         auto_wrap_policy = functools.partial(
             transformer_auto_wrap_policy,
